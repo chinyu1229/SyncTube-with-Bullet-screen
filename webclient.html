@@ -66,6 +66,27 @@
     window.addEventListener("load", init, false);
 
 </script>
+
+
+
+<!--<script>-->
+<!--    // Load the IFrame Player API code asynchronously.-->
+<!--    var tag = document.createElement('script');-->
+<!--    tag.src = "https://www.youtube.com/player_api";-->
+<!--    var firstScriptTag = document.getElementsByTagName('script')[0];-->
+<!--    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);-->
+
+<!--    // Replace the 'ytplayer' element with an <iframe> and-->
+<!--    // YouTube player after the API code downloads.-->
+<!--    var player;-->
+<!--    function onYouTubePlayerAPIReady() {-->
+<!--        player = new YT.Player('ytplayer', {-->
+<!--            height: '360',-->
+<!--            width: '640',-->
+<!--            videoId: 'M7lc1UVf-VE'-->
+<!--        });-->
+<!--    }-->
+<!--</script>-->
 <h2>WebSocket Test</h2>
 
 <div id="output"></div>
@@ -73,7 +94,10 @@
 <form id="form">
     <input type="text" id="msg" size="64"/>
     <input type="submit" value="傳送" />
-
 </form>
+
+<iframe id="ytplayer" type="text/html" width="640" height="360"
+        src="https://www.youtube.com/embed/ShFKF2YN7H0"?autoplay=1&origin=https://www.youtube.com/watch?v=ShFKF2YN7H0"
+        frameborder="0"></iframe>
 
 </html>
