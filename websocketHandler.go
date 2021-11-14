@@ -7,6 +7,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type ClientManager struct {
@@ -18,6 +19,8 @@ type ClientManager struct {
 	register chan *Client
 	//新注销的长连接client
 	unregister chan *Client
+
+	broadcastTime chan []byte
 }
 
 type Client struct {
@@ -43,6 +46,8 @@ type Pack struct {
 	Msg  string `json:"msg"`
 	Time string `json:"time"`
 }
+
+var timeTable []int
 
 func (manager *ClientManager) start() {
 
@@ -95,16 +100,32 @@ func (c *Client) read() { //讀取從web端輸入的message，並把message 傳�
 			c.socket.Close()
 			break
 		}
-		fmt.Println(string(msg))
+		//fmt.Println(string(msg))
 		var webmsg Pack
 		json.Unmarshal(msg, &webmsg)
-		fmt.Println(webmsg)
+		//fmt.Println(webmsg)
 
 		if webmsg.Msg != "" && webmsg.Time == "" {
 			jsonMsg, _ := json.Marshal(&Message{Sender: c.id, Content: string(webmsg.Msg)})
 			manager.broadcast <- jsonMsg
 		} else {
+			Itime, _ := strconv.Atoi(webmsg.Time)
+			timeTable = append(timeTable, Itime)
 
+			if len(timeTable) >= len(manager.clients) {
+				var minV = timeTable[0]
+				for _, element := range timeTable {
+					if element < minV {
+						minV = element
+					}
+				}
+				fmt.Println(minV)
+				timeTable = nil
+
+			}
+
+			//jsonMsg, _ := json.Marshal(&Message{Sender: c.id, Content: string(webmsg.Time)})
+			//manager.broadcast <- jsonMsg
 		}
 	}
 }

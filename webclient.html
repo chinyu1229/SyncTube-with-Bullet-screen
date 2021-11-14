@@ -94,7 +94,9 @@
 
     function onPlayerReady(event) {
         event.target.playVideo();
-        timecounter = setInterval("console.log(player.getCurrentTime())",1000);
+
+
+        timecounter = setInterval(sendTime,10000);
     }
 
     var done = false;
@@ -102,10 +104,16 @@
 
         if(event.data == YT.PlayerState.ENDED)
         {
-            clearInterval(timecounter);
+            //clearInterval(timecounter);
         }
     }
+    function sendTime(){
+        player.getCurrentTime()
+        pack.msg = "";
+        pack.time = Math.trunc(player.getCurrentTime()).toString() ;
 
+        websocket.send(JSON.stringify(pack));
+    }
     function stopVideo() {
         player.stopVideo();
     }
