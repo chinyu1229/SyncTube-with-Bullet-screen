@@ -39,6 +39,11 @@ var manager = ClientManager{
 	clients:    make(map[*Client]bool),
 }
 
+type Pack struct {
+	Msg  string `json:"msg"`
+	Time string `json:"time"`
+}
+
 func (manager *ClientManager) start() {
 
 	for {
@@ -90,8 +95,17 @@ func (c *Client) read() { //讀取從web端輸入的message，並把message 傳�
 			c.socket.Close()
 			break
 		}
-		jsonMsg, _ := json.Marshal(&Message{Sender: c.id, Content: string(msg)})
-		manager.broadcast <- jsonMsg
+		fmt.Println(string(msg))
+		var webmsg Pack
+		json.Unmarshal(msg, &webmsg)
+		fmt.Println(webmsg)
+
+		if webmsg.Msg != "" && webmsg.Time == "" {
+			jsonMsg, _ := json.Marshal(&Message{Sender: c.id, Content: string(webmsg.Msg)})
+			manager.broadcast <- jsonMsg
+		} else {
+
+		}
 	}
 }
 func (c *Client) write() { //讀取client send channel 的訊息（從broadcast channel得到的訊息）傳送給web client端
