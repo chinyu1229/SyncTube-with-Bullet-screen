@@ -52,7 +52,18 @@
     }
     function onMessage(evt) {
         const content = JSON.parse(evt.data)
-        writeToScreen(content.sender + ":" + content.content);
+        if(content.sender == "time"){
+            var t = parseInt(content.content)
+            console.log(t - player.getCurrentTime())
+            if(t - player.getCurrentTime() >= 3 || t - player.getCurrentTime() <= -3) {
+                console.log("seek")
+                player.seekTo(t, true)
+            }
+
+        }
+        else {
+            writeToScreen(content.sender + ":" + content.content);
+        }
     }
     function onError(evt) {
         writeToScreen('<span style="color: red;">ERROR:</span> '+ evt.data);
@@ -96,7 +107,7 @@
         event.target.playVideo();
 
 
-        timecounter = setInterval(sendTime,5000);
+        timecounter = setInterval(sendTime,1000);
     }
 
     var done = false;
