@@ -105,7 +105,7 @@ func (c *Client) read() { //讀取從web端輸入的message，並把message 傳�
 		json.Unmarshal(msg, &webmsg)
 		//fmt.Println(webmsg)
 
-		if webmsg.Msg != "" && webmsg.Time == "" {
+		if webmsg.Msg != "" && webmsg.Time == "" { //聊天訊息
 			jsonMsg, _ := json.Marshal(&Message{Sender: c.id, Content: string(webmsg.Msg)})
 			manager.broadcast <- jsonMsg
 		} else {
@@ -121,11 +121,9 @@ func (c *Client) read() { //讀取從web端輸入的message，並把message 傳�
 				}
 				fmt.Println(minV)
 				timeTable = nil
-
+				jsonMsg, _ := json.Marshal(&Message{Sender: "time", Content: strconv.Itoa(minV)})
+				manager.broadcast <- jsonMsg
 			}
-
-			//jsonMsg, _ := json.Marshal(&Message{Sender: c.id, Content: string(webmsg.Time)})
-			//manager.broadcast <- jsonMsg
 		}
 	}
 }
