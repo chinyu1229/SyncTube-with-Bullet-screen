@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -154,6 +156,14 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	go client.read()
 	go client.write()
 }
+func socketPlayHandler(w http.ResponseWriter, r *http.Request) {
+	content, err := ioutil.ReadFile("webclient.html")
+	if err != nil {
+		fmt.Println("Could not open file.", err)
+	}
+	fmt.Fprintf(w, "%s", content)
+
+}
 
 func home(w http.ResponseWriter, r *http.Request) {
 	var tmpl = template.Must(template.ParseFiles("./index.html"))
@@ -163,6 +173,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	}{
 		"My Site",
 	})
+
 }
 func check(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
@@ -177,16 +188,20 @@ func check(w http.ResponseWriter, r *http.Request) {
 	if u.Hostname() != "www.youtube.com" {
 		return
 	}
-
+	uuid := uuid.Must(uuid.NewV4(), nil).String()
+	http.Redirect(w, r, "socket/"+uuid+"?"+u.RawQuery, 302)
 }
 
 func main() {
 	fmt.Println("starting ....")
 	go manager.start()
 
-	http.HandleFunc("/socket", socketHandler)
-	http.HandleFunc("/", home)
-	http.HandleFunc("/check", check)
-	//http.HandleFunc("/", home)
+	m := mux.NewRouter()
+	m.HandleFunc("/socket", socketHandler)
+	m.HandleFunc("/socket/{code}", socketPlayHandler)
+	m.HandleFunc("/", home)
+	m.HandleFunc("/check", check)
+	http.Handle("/", m)
+
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
