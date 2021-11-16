@@ -1,151 +1,289 @@
 <!DOCTYPE html>
-<meta charset="utf-8" />
-<title>WebSocket Test</title>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-<script type="text/javascript">
-    var wsUri ="ws://localhost:8080/socket";
-    var output;
-    let pack = {
-        msg : "",
-        time: ""
-    };
+<html>
 
-    function init() {
-        output = document.getElementById("output");
-        testWebSocket();
-    }
-    function testWebSocket() {
-        websocket = new WebSocket(wsUri);
-        websocket.onopen = function(evt) {
-            onOpen(evt)
-        };
-        websocket.onclose = function(evt) {
-            onClose(evt)
-        };
-        websocket.onmessage = function(evt) {
-            onMessage(evt)
-        };
-        websocket.onerror = function(evt) {
-            onError(evt)
-        };
-        var send_msg = $("#msg");
-        $("#form").submit(function(event){
-            event.preventDefault();
-            if(!websocket){
-                return false;
+<head>
+    <meta charset="utf-8" />
+    <title>WebSocket Test</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        button {
+            padding: 20px;
+            font-size: 20px;
+        }
+        .box {
+            width: 720px;
+            height: 480px;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+            /* */
+        }
+
+        .track {
+            height: 40px;
+            line-height: 40px;
+            margin-bottom: 5px;
+        }
+        .child {
+            font-size: 25px;
+            line-height: 20px;
+            margin-bottom: 10px;
+            transform: translateX(100%);
+            text-shadow: 3px 3px 3px rgb(0, 0, 0);
+            animation: scrollTo linear 10s 1;
+        }
+        .child-0 {
+            color: brown;
+        }
+        .child-1 {
+            color: rgb(127, 197, 35);
+        }
+        .child-2 {
+            color: coral;
+        }
+        @keyframes scrollTo {
+            to {
+                transform: translateX(-100%);
             }
-            if(!send_msg.val()){
-                console.log("null")
-                return false;
+        }
+
+        .player1 {
+            position: absolute;
+            /* */
+            width: 100%;
+            height: 100%;
+            top: 0px;
+        }
+
+        .comm {
+            position: absolute;
+            /* */
+            width: 220px;
+            height: 30px;
+            top: 100%;
+            left: 50%;
+            margin-left: -110px;
+            margin-top: -37px;
+            opacity: 0.3;
+            transition: 0.3s;
+        }
+
+        .comm:hover {
+            opacity: 0.9;
+        }
+        .fullbutton{
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="text/javascript">
+        var wsUri = "ws://localhost:8080/socket";
+        var output;
+        let pack = {
+            msg: "",
+            time: ""
+        };
+
+        function init() {
+            output = document.getElementById("output");
+            testWebSocket();
+        }
+        function testWebSocket() {
+            websocket = new WebSocket(wsUri);
+            websocket.onopen = function (evt) {
+                onOpen(evt)
+            };
+            websocket.onclose = function (evt) {
+                onClose(evt)
+            };
+            websocket.onmessage = function (evt) {
+                onMessage(evt)
+            };
+            websocket.onerror = function (evt) {
+                onError(evt)
+            };
+            var send_msg = $("#fname");
+            $("#form").submit(function (event) {
+                event.preventDefault();
+                if (!websocket) {
+                    return false;
+                }
+                if (!send_msg.val()) {
+                    console.log("null")
+                    return false;
+                }
+                pack.msg = send_msg.val();
+                pack.time = "";
+                websocket.send(JSON.stringify(pack));
+                send_msg.val("");
+            });
+        }
+        function onOpen(evt) {
+            writeToScreen("CONNECTED");
+        }
+        function onClose(evt) {
+            writeToScreen("DISCONNECTED");
+        }
+        function onMessage(evt) {
+            const content = JSON.parse(evt.data)
+            if (content.sender == "time") {
+                var t = parseInt(content.content)
+                console.log(t - player.getCurrentTime())
+                if (t - player.getCurrentTime() >= 3 || t - player.getCurrentTime() <= -3) {
+                    console.log("seek")
+                    player.seekTo(t, true)
+                }
+
             }
-            pack.msg = send_msg.val();
-            pack.time = "";
+            else {
+                writeToScreen(content.sender + ":" + content.content);
+                addcomm(content.content)
+
+            }
+        }
+        function onError(evt) {
+            writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+        }
+        function writeToScreen(message) {
+            var pre = document.createElement("p");
+            pre.style.wordWrap = "break-word";
+            pre.innerHTML = message;
+            output.appendChild(pre);
+        }
+
+
+        window.addEventListener("load", init, false);
+    </script>
+
+
+    <script>
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+        var timecounter;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '400',
+                width: '800',
+                videoId: 'TGJ9-1LWFtE',
+                playerVars: {
+                    'playsinline': 1,
+                    'fs': 0,
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+
+
+            timecounter = setInterval(sendTime, 1000);
+        }
+
+        var done = false;
+        function onPlayerStateChange(event) {
+
+            if (event.data == YT.PlayerState.ENDED) {
+                //clearInterval(timecounter);
+            }
+        }
+        function sendTime() {
+            player.getCurrentTime()
+            pack.msg = "";
+            pack.time = Math.trunc(player.getCurrentTime()).toString();
+
             websocket.send(JSON.stringify(pack));
-            send_msg.val("");
+        }
+
+
+    // function time_click(id){
+    //     console.log(player.getCurrentTime())
+    // }
+
+    </script>
+
+
+    <h2>WebSocket Test</h2>
+
+    <div id="output"></div>
+
+
+
+    <!--<button id="TimeButton" onclick="time_click(this.id)">目前時間</button>-->
+
+<!--    <button onclick="addcomm('ssg');">Test send comm</button>-->
+    <div class="fullbutton">
+        <button onclick="openFullscreen();">Open Fullscreen</button>
+    </div>
+
+    <div class="box" id="box">
+
+        <div id="player" class="player1">
+        </div>
+        <div class="track">
+            <div class="child child-0">test1</div>
+        </div>
+        <div class="track">
+            <div class="child child-1">test2</div>
+        </div>
+        <div class="track">
+            <div class="child child-2">test3</div>
+        </div>
+        <form id="form">
+            <input type="text" id="fname" class="comm"/>
+            <input type="submit" value="enter"/>
+        </form>
+
+    </div>
+    <script>
+
+        var animation = document.querySelector('#box');
+        animation.addEventListener('animationend', (e) => {
+            e.target.parentNode.remove();
+
         });
-    }
-    function onOpen(evt) {
-        writeToScreen("CONNECTED");
-    }
-    function onClose(evt) {
-        writeToScreen("DISCONNECTED");
-    }
-    function onMessage(evt) {
-        const content = JSON.parse(evt.data)
-        if(content.sender == "time"){
-            var t = parseInt(content.content)
-            console.log(t - player.getCurrentTime())
-            if(t - player.getCurrentTime() >= 3 || t - player.getCurrentTime() <= -3) {
-                console.log("seek")
-                player.seekTo(t, true)
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+        function addcomm(text) {
+
+            $('#box').append('<div class="track"><div class="child child-' + (getRandomInt(3)) + '">' + text + '</div></div>');
+        }
+
+        var elem = document.getElementById("box");
+
+        function openFullscreen() {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
             }
-
         }
-        else {
-            writeToScreen(content.sender + ":" + content.content);
-        }
-    }
-    function onError(evt) {
-        writeToScreen('<span style="color: red;">ERROR:</span> '+ evt.data);
-    }
-    function writeToScreen(message) {
-        var pre = document.createElement("p");
-        pre.style.wordWrap = "break-word";
-        pre.innerHTML = message;
-        output.appendChild(pre);
-    }
 
-
-    window.addEventListener("load", init, false);
-</script>
-
-
-<script>
-    var tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-    var player;
-    var timecounter;
-    function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-            height: '390',
-            width: '640',
-            videoId: 'TGJ9-1LWFtE',
-            playerVars: {
-                'playsinline': 1
-            },
-            events: {
-                'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange
+        function closeFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) { /* Safari */
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { /* IE11 */
+                document.msExitFullscreen();
             }
-        });
-    }
-
-    function onPlayerReady(event) {
-        event.target.playVideo();
-
-
-        timecounter = setInterval(sendTime,1000);
-    }
-
-    var done = false;
-    function onPlayerStateChange(event) {
-
-        if(event.data == YT.PlayerState.ENDED)
-        {
-            //clearInterval(timecounter);
         }
-    }
-    function sendTime(){
-        player.getCurrentTime()
-        pack.msg = "";
-        pack.time = Math.trunc(player.getCurrentTime()).toString() ;
-
-        websocket.send(JSON.stringify(pack));
-    }
-    function stopVideo() {
-        player.stopVideo();
-    }
-
-    function time_click(id){
-        console.log(player.getCurrentTime())
-    }
+    </script>
 
 
-</script>
-<h2>WebSocket Test</h2>
-
-<div id="output"></div>
-
-<form id="form">
-    <input type="text" id="msg" size="64"/>
-    <input type="submit" value="傳送"/>
-</form>
-
-<div id="player"></div>
-
-<button id="TimeButton" onclick="time_click(this.id)">目前時間</button>
+</body>
 
 </html>
