@@ -2,9 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>{{ .Title }}</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <style>
+       .form{
+           text-align: center;
+       }
+    </style>
 </head>
+
 <body>
+<form class="form" action="/check" method="post">
+    <input type="text" name="url" size="64"/>
+    <input type="submit" value="傳送"/>
+</form>
+
+<script type="text/javascript">
+    // $("#form_url").submit(function(event){
+    //     event.preventDefault();
+    //     var url = $("#url")
+    // });
+</script>
+
 
 </body>
+
 </html>

@@ -5,21 +5,18 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
+	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
 type ClientManager struct {
-	//客户端 map 储存并管理所有的长连接client，在线的为true，不在的为false
-	clients map[*Client]bool
-	//web端发送来的的message我们用broadcast来接收，并最后分发给所有的client
-	broadcast chan []byte
-	//新创建的长连接client
-	register chan *Client
-	//新注销的长连接client
-	unregister chan *Client
-
+	clients       map[*Client]bool
+	broadcast     chan []byte
+	register      chan *Client
+	unregister    chan *Client
 	broadcastTime chan []byte
 }
 
@@ -119,7 +116,7 @@ func (c *Client) read() { //讀取從web端輸入的message，並把message 傳�
 						minV = element
 					}
 				}
-				fmt.Println(minV)
+				//fmt.Println(minV) // test
 				timeTable = nil
 				jsonMsg, _ := json.Marshal(&Message{Sender: "time", Content: strconv.Itoa(minV)})
 				manager.broadcast <- jsonMsg
@@ -158,15 +155,38 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	go client.write()
 }
 
-//func home(w http.ResponseWriter, r *http.Request) {
-//	fmt.Fprintf(w, "Index Page")
-//}
+func home(w http.ResponseWriter, r *http.Request) {
+	var tmpl = template.Must(template.ParseFiles("./index.html"))
+
+	tmpl.Execute(w, struct {
+		Title string
+	}{
+		"My Site",
+	})
+}
+func check(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Fatal("ParseForm: ", err)
+	}
+	yturl := r.Form["url"][0]
+	u, err := url.Parse(yturl)
+	fmt.Println(u.Hostname())
+	fmt.Println(u.Path)
+	fmt.Println(u.RawQuery)
+	if u.Hostname() != "www.youtube.com" {
+		return
+	}
+
+}
 
 func main() {
 	fmt.Println("starting ....")
 	go manager.start()
 
 	http.HandleFunc("/socket", socketHandler)
+	http.HandleFunc("/", home)
+	http.HandleFunc("/check", check)
 	//http.HandleFunc("/", home)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
