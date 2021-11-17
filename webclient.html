@@ -3,17 +3,20 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>WebSocket</title>
+    <title>YOUTUBE SYNC</title>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        button {
-            padding: 20px;
-            font-size: 20px;
+        /*button {*/
+        /*    padding: 20px;*/
+        /*    font-size: 20px;*/
+        /*}*/
+        body{
+            /*background-color: lightgray;*/
         }
         .box {
-            width: 720px;
-            height: 480px;
+            width: 1080px;
+            height: 720px;
             margin: 0 auto;
             overflow: hidden;
             position: relative;
@@ -34,13 +37,16 @@
             animation: scrollTo linear 10s 1;
         }
         .child-0 {
-            color: brown;
+            color: rgb(240,255,255);
         }
         .child-1 {
-            color: rgb(127, 197, 35);
+            color: rgb(0,191,255);
         }
         .child-2 {
-            color: coral;
+            color: rgb(222,184,135);
+        }
+        .child-3{
+            color: rgb(250,128,114);
         }
         @keyframes scrollTo {
             to {
@@ -74,13 +80,29 @@
         }
         .fullbutton{
             text-align: center;
+            font-size: 100px;
         }
+        .close_button{
+            position: absolute;
+            width: 20%;
+            height: 20%;
+            top: 100%;
+            left: 84%;
+            font-size: 2px;
+            margin-left: -30px;
+            margin-top: -30px;
+            opacity: 0.3;
+            transition: 0.3s;
+        }
+        .label1{
+            text-align: center;
+        }
+
     </style>
 </head>
 
 <body>
     <script type="text/javascript">
-        // var code = location.search
         var wsUri = "ws://localhost:8080/socket";
         var output;
         let pack = {
@@ -123,26 +145,24 @@
             });
         }
         function onOpen(evt) {
-            writeToScreen("CONNECTED");
+            // writeToScreen("CONNECTED");
         }
         function onClose(evt) {
-            writeToScreen("DISCONNECTED");
+            writeToScreen("YOUR WEBSOCKET HAS DISCONNECTED, Please reload this page!");
         }
         function onMessage(evt) {
             const content = JSON.parse(evt.data)
             if (content.sender == "time") {
                 var t = parseInt(content.content)
-                console.log(t - player.getCurrentTime())
+                // console.log(t - player.getCurrentTime())
                 if (t - player.getCurrentTime() >= 3 || t - player.getCurrentTime() <= -3) {
-                    console.log("seek")
+                    // console.log("seek")
                     player.seekTo(t, true)
                 }
-
             }
             else {
-                writeToScreen(content.sender + ":" + content.content);
+                // writeToScreen(content.sender + ":" + content.content);
                 addcomm(content.content)
-
             }
         }
         function onError(evt) {
@@ -155,10 +175,8 @@
             output.appendChild(pre);
         }
 
-
         window.addEventListener("load", init, false);
     </script>
-
 
     <script>
         var vId = location.search.split('=')[1]
@@ -187,12 +205,9 @@
 
         function onPlayerReady(event) {
             event.target.playVideo();
-
-
             timecounter = setInterval(sendTime, 1000);
         }
 
-        var done = false;
         function onPlayerStateChange(event) {
 
             if (event.data == YT.PlayerState.ENDED) {
@@ -203,50 +218,44 @@
             player.getCurrentTime()
             pack.msg = "";
             pack.time = Math.trunc(player.getCurrentTime()).toString();
-
             websocket.send(JSON.stringify(pack));
         }
-
-
-    // function time_click(id){
-    //     console.log(player.getCurrentTime())
-    // }
 
     </script>
 
 
-    <h2>WebSocket Test</h2>
-
     <div id="output"></div>
-
-
-
-    <!--<button id="TimeButton" onclick="time_click(this.id)">目前時間</button>-->
-
-<!--    <button onclick="addcomm('ssg');">Test send comm</button>-->
     <div class="fullbutton">
         <button onclick="openFullscreen();">Open Fullscreen</button>
     </div>
-
     <div class="box" id="box">
 
         <div id="player" class="player1">
         </div>
         <div class="track">
-            <div class="child child-0">test1</div>
+            <div class="child child-0"></div>
         </div>
         <div class="track">
-            <div class="child child-1">test2</div>
+            <div class="child child-1"></div>
         </div>
         <div class="track">
-            <div class="child child-2">test3</div>
+            <div class="child child-2"></div>
+        </div>
+        <div class="track">
+            <div class="child child-3"></div>
         </div>
         <form id="form">
             <input type="text" id="fname" class="comm"/>
             <input type="hidden" value="enter"/>
         </form>
-
+        <div class="close_button">
+            <button onclick="closeFullscreen();">exit</button>
+        </div>
     </div>
+    <div class="label1">
+        <h4>使用上方白框發送聊天訊息</h4>
+    </div>
+
     <script>
 
         var animation = document.querySelector('#box');
@@ -259,7 +268,7 @@
         }
         function addcomm(text) {
 
-            $('#box').append('<div class="track"><div class="child child-' + (getRandomInt(3)) + '">' + text + '</div></div>');
+            $('#box').append('<div class="track"><div class="child child-' + (getRandomInt(4)) + '">' + text + '</div></div>');
         }
 
         var elem = document.getElementById("box");
