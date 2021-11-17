@@ -5,17 +5,56 @@
     <title>{{ .Title }}</title>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
     <style>
-       .form{
-           text-align: center;
+        .flex{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            height:80vh;
+            background-color: rgba(238, 238, 238);
+        }
+       input[type=text] {
+           width: 80%;
+           padding: 12px 20px;
+           margin: 8px 0;
+           box-sizing: border-box;
+           border: 2px solid red;
+           border-radius: 4px;
        }
+       .site-header{
+           display: flex;
+           justify-content: space-between;
+       }
+       footer {
+            text-align: center;
+            padding: 3px;
+        }
     </style>
 </head>
 
 <body>
-<form class="form" action="/check" method="post">
-    <input type="text" name="url" size="64"/>
-    <input type="submit" value="傳送"/>
-</form>
+<header class="site-header">
+    <div class="container">
+        <h1><a>YOUTUBE SYNC  </a><i><img src="https://cdn-icons-png.flaticon.com/512/4631/4631237.png" width="5%"></i></h1>
+    </div>
+</header>
+
+<div class="flex">
+    <div>
+        <label>輸入YOUTUBE連結</label>
+        <form class="form" action="/check" method="post">
+            <input type="text" name="url" size="64"/>
+            <input type="submit" value="傳送"/>
+        </form>
+    </div>
+</div>
+
+
+<footer>
+    <p>Created by Chin Yu. © 2021</p>
+</footer>
+
+
+
 
 <script type="text/javascript">
 </script>
