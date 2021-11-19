@@ -54,15 +54,15 @@ func (manager *ClientManager) start() {
 		select {
 		case conn := <-manager.register:
 			manager.clients[conn] = true
-			jsonMsg, _ := json.Marshal(&Message{Content: "a new socket has connect"})
-			manager.send(jsonMsg, conn)
+			//jsonMsg, _ := json.Marshal(&Message{Content: "a new socket has connect"})
+			//manager.send(jsonMsg, conn)
 
 		case conn := <-manager.unregister:
 			if _, ok := manager.clients[conn]; ok {
 				close(conn.send)
 				delete(manager.clients, conn)
-				jsonMsg, _ := json.Marshal(&Message{Content: "a socket has disconnect"})
-				manager.send(jsonMsg, conn)
+				//jsonMsg, _ := json.Marshal(&Message{Content: "a socket has disconnect"})
+				//manager.send(jsonMsg, conn)
 			}
 
 		case message := <-manager.broadcast:
@@ -171,7 +171,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, struct {
 		Title string
 	}{
-		"My Site",
+		"SYNCTUBE",
 	})
 
 }
@@ -182,10 +182,10 @@ func check(w http.ResponseWriter, r *http.Request) {
 	}
 	yturl := r.Form["url"][0]
 	u, err := url.Parse(yturl)
-	fmt.Println(u.Hostname())
-	fmt.Println(u.Path)
-	fmt.Println(u.RawQuery)
-	if u.Hostname() != "www.youtube.com" {
+	//fmt.Println(u.Hostname())
+	//fmt.Println(u.Path)
+	//fmt.Println(u.RawQuery)
+	if u.Hostname() != "www.youtube.com" { //404
 		return
 	}
 	uuid := uuid.Must(uuid.NewV4(), nil).String()
