@@ -14,18 +14,18 @@ import (
 	"strconv"
 )
 
-type ClientManager struct {
-	clients       map[*Client]bool
-	broadcast     chan []byte
+type ClientManager struct { //save all client's message
+	clients       map[*Client]bool // online : true, offline : false
+	broadcast     chan []byte      // save comments from web(clients)
 	register      chan *Client
 	unregister    chan *Client
-	broadcastTime chan []byte
+	broadcastTime chan []byte // save video time from web(clients)
 }
 
 type Client struct {
 	id     string
 	socket *websocket.Conn
-	send   chan []byte
+	send   chan []byte // send message from web send frame
 }
 
 type Message struct {
@@ -46,14 +46,15 @@ type Pack struct {
 	Time string `json:"time"`
 }
 
-var timeTable []int
+var timeTable []int // save all clients video time
 
-func (manager *ClientManager) start() {
+func (manager *ClientManager) start() { // listen register & unregister and broadcast channel
 
 	for {
 		select {
-		case conn := <-manager.register:
+		case conn := <-manager.register: // if someone enter the url
 			manager.clients[conn] = true
+			/*Test*/
 			//jsonMsg, _ := json.Marshal(&Message{Content: "a new socket has connect"})
 			//manager.send(jsonMsg, conn)
 
@@ -61,11 +62,13 @@ func (manager *ClientManager) start() {
 			if _, ok := manager.clients[conn]; ok {
 				close(conn.send)
 				delete(manager.clients, conn)
+				/*Test*/
 				//jsonMsg, _ := json.Marshal(&Message{Content: "a socket has disconnect"})
 				//manager.send(jsonMsg, conn)
 			}
 
 		case message := <-manager.broadcast:
+			// broadcast message to client send channel by iterate
 			for conn := range manager.clients {
 				select {
 				case conn.send <- message:
@@ -79,35 +82,35 @@ func (manager *ClientManager) start() {
 	}
 }
 
-func (manager *ClientManager) send(message []byte, ignore *Client) {
-	for conn := range manager.clients {
-		if conn != ignore {
-			conn.send <- message
-		}
-	}
-}
-func (c *Client) read() { //讀取從web端輸入的message，並把message 傳給broadcast使得其能夠廣播給其他client
+//func (manager *ClientManager) send(message []byte, ignore *Client) {
+//	for conn := range manager.clients {
+//		if conn != ignore {
+//			conn.send <- message
+//		}
+//	}
+//}
+
+// read message from web, send the message to broadcast channel
+func (c *Client) read() {
 	defer func() {
 		manager.unregister <- c
 		c.socket.Close()
 	}()
 	for {
-		//read msg from web client
+		//read message from web client
 		_, msg, err := c.socket.ReadMessage()
 		if err != nil {
 			manager.unregister <- c
 			c.socket.Close()
 			break
 		}
-		//fmt.Println(string(msg))
-		var webmsg Pack
+		var webmsg Pack // video time & comments message
 		json.Unmarshal(msg, &webmsg)
-		//fmt.Println(webmsg)
 
-		if webmsg.Msg != "" && webmsg.Time == "" { //聊天訊息
+		if webmsg.Msg != "" && webmsg.Time == "" { // comments message
 			jsonMsg, _ := json.Marshal(&Message{Sender: c.id, Content: string(webmsg.Msg)})
 			manager.broadcast <- jsonMsg
-		} else {
+		} else { // video time message
 			Itime, _ := strconv.Atoi(webmsg.Time)
 			timeTable = append(timeTable, Itime)
 
@@ -126,7 +129,7 @@ func (c *Client) read() { //讀取從web端輸入的message，並把message 傳�
 		}
 	}
 }
-func (c *Client) write() { //讀取client send channel 的訊息（從broadcast channel得到的訊息）傳送給web client端
+func (c *Client) write() { //read client send channel(from broadcast channel in start() func）then pass to web client
 	defer func() {
 		c.socket.Close()
 	}()
@@ -153,8 +156,8 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	client := &Client{id: uuid.Must(uuid.NewV4(), nil).String(), socket: conn, send: make(chan []byte)}
 	manager.register <- client
 
-	go client.read()
-	go client.write()
+	go client.read()  // receive message from web
+	go client.write() // send message to web (from broadcast channel to client own send channel)
 }
 func socketPlayHandler(w http.ResponseWriter, r *http.Request) {
 	content, err := ioutil.ReadFile("webclient.html")
@@ -182,12 +185,11 @@ func check(w http.ResponseWriter, r *http.Request) {
 	}
 	yturl := r.Form["url"][0]
 	u, err := url.Parse(yturl)
-	//fmt.Println(u.Hostname())
-	//fmt.Println(u.Path)
-	//fmt.Println(u.RawQuery)
+
 	if u.Hostname() != "www.youtube.com" { //404
 		return
 	}
+
 	uuid := uuid.Must(uuid.NewV4(), nil).String()
 	http.Redirect(w, r, "socket/"+uuid+"?"+u.RawQuery, 302)
 }
