@@ -108,6 +108,7 @@ func (c *Client) read() {
 		json.Unmarshal(msg, &webmsg)
 
 		if webmsg.Msg != "" && webmsg.Time == "" { // comments message
+			webmsg.Msg = template.HTMLEscapeString(webmsg.Msg)
 			jsonMsg, _ := json.Marshal(&Message{Sender: c.id, Content: string(webmsg.Msg)})
 			manager.broadcast <- jsonMsg
 		} else { // video time message
@@ -183,7 +184,7 @@ func check(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal("ParseForm: ", err)
 	}
-	yturl := r.Form["url"][0]
+	yturl := template.HTMLEscapeString(r.Form["url"][0])
 	u, err := url.Parse(yturl)
 
 	if u.Hostname() != "www.youtube.com" { //404
