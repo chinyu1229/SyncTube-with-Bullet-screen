@@ -11,9 +11,10 @@
         /*    padding: 20px;*/
         /*    font-size: 20px;*/
         /*}*/
-        body{
+        body {
             /*background-color: lightgray;*/
         }
+
         .box {
             width: 1080px;
             height: 720px;
@@ -28,6 +29,7 @@
             line-height: 40px;
             margin-bottom: 5px;
         }
+
         .child {
             font-size: 25px;
             line-height: 20px;
@@ -36,18 +38,23 @@
             text-shadow: 3px 3px 3px rgb(0, 0, 0);
             animation: scrollTo linear 10s 1;
         }
+
         .child-0 {
-            color: rgb(240,255,255);
+            color: rgb(240, 255, 255);
         }
+
         .child-1 {
-            color: rgb(0,191,255);
+            color: rgb(0, 191, 255);
         }
+
         .child-2 {
-            color: rgb(222,184,135);
+            color: rgb(222, 184, 135);
         }
-        .child-3{
-            color: rgb(250,128,114);
+
+        .child-3 {
+            color: rgb(250, 128, 114);
         }
+
         @keyframes scrollTo {
             to {
                 transform: translateX(-100%);
@@ -78,11 +85,13 @@
         .comm:hover {
             opacity: 0.9;
         }
-        .fullbutton{
+
+        .fullbutton {
             text-align: center;
             font-size: 100px;
         }
-        .close_button{
+
+        .close_button {
             position: absolute;
             width: 20%;
             height: 20%;
@@ -94,19 +103,20 @@
             opacity: 0.3;
             transition: 0.3s;
         }
-        .close_button:hover{
+
+        .close_button:hover {
             opacity: 0.9;
         }
-        .label1{
+
+        .label1 {
             text-align: center;
         }
-
     </style>
 </head>
 
 <body>
     <script type="text/javascript">
-        var wsUri = "ws://localhost:8080/socket"; // your ip
+        var wsUri = "ws://127.0.0.1:8080/socket"; // your ip
         var output;
         let pack = {
             msg: "",
@@ -148,7 +158,7 @@
             });
         }
         function onOpen(evt) {
-            // writeToScreen("CONNECTED");
+            writeToScreen("CONNECTED");
         }
         function onClose(evt) {
             writeToScreen("YOUR WEBSOCKET HAS DISCONNECTED, Please reload this page!");
@@ -248,8 +258,8 @@
             <div class="child child-3"></div>
         </div>
         <form id="form">
-            <input type="text" id="fname" class="comm"/>
-            <input type="hidden" value="enter"/>
+            <input type="text" id="fname" class="comm" />
+            <input type="hidden" value="enter" />
         </form>
         <div class="close_button">
             <button onclick="closeFullscreen();">exit</button>
@@ -296,7 +306,6 @@
             }
         }
     </script>
-
 
 </body>
 

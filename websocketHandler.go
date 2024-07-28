@@ -48,6 +48,7 @@ type Pack struct {
 
 var timeTable []int // save all clients video time
 
+
 func (manager *ClientManager) start() { // listen register & unregister and broadcast channel
 
 	for {
@@ -81,14 +82,6 @@ func (manager *ClientManager) start() { // listen register & unregister and broa
 		}
 	}
 }
-
-//func (manager *ClientManager) send(message []byte, ignore *Client) {
-//	for conn := range manager.clients {
-//		if conn != ignore {
-//			conn.send <- message
-//		}
-//	}
-//}
 
 // read message from web, send the message to broadcast channel
 func (c *Client) read() {
@@ -130,6 +123,7 @@ func (c *Client) read() {
 		}
 	}
 }
+
 func (c *Client) write() { //read client send channel(from broadcast channel in start() func）then pass to web client
 	defer func() {
 		c.socket.Close()
@@ -160,6 +154,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	go client.read()  // receive message from web
 	go client.write() // send message to web (from broadcast channel to client own send channel)
 }
+
 func socketPlayHandler(w http.ResponseWriter, r *http.Request) {
 	content, err := ioutil.ReadFile("webclient.html")
 	if err != nil {
@@ -179,6 +174,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	})
 
 }
+
 func check(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -205,6 +201,5 @@ func main() {
 	m.HandleFunc("/", home)
 	m.HandleFunc("/check", check)
 	http.Handle("/", m)
-
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
