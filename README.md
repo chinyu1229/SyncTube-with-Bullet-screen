@@ -51,14 +51,6 @@ http://localhost:8080
 <img src="md_static/bullet.png">
 
 
-#### Sample and Test
-我將此專案部署到
-
-http://wama.mooo.com:8080/
-
-通過此連結可以測試結果，輸入YT影片連結，並複製給朋友就可以開始你的 SyncTube了 :)
-
-
 ## Project Illustration
 主要使用websocket實現client廣播功能
 
@@ -69,7 +61,7 @@ http://wama.mooo.com:8080/
 1. 將所有client訊息保存下來
    * id
    * socket
-   * 要傳送的聊天（彈幕)內容
+   * 要傳送的聊天（彈幕）內容
 
 
 2. 建立一個Manager去保存client 資料，包含了1.的內容與boardcast儲存每個client需要廣播給其他client的內容
@@ -81,15 +73,13 @@ http://wama.mooo.com:8080/
    
 
 4. 當有Client進入（有人打開指定web），就開啟兩個 goroutine 
-   * read routine: 讀取client端傳送的訊息（彈慕與目前影片時間），並把內容傳送至broadcast channel
+   * read routine: 讀取client端傳送的訊息（彈幕與目前影片時間），並把內容傳送至broadcast channel
    * write routine: 將send的內容傳送給web端
 
 
 5. main()
    * 開啟Manager 的 `start()`
    * Set handler
-   
-
 
 
 ### javascript
